@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/Users/danielsinkin/GitHub_private/neetcode/build",
-  "command": "/usr/bin/clang++   -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -g -std=c++2b -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion -Wfloat-conversion -Wdouble-promotion -Wformat=2 -Wimplicit-fallthrough -Wextra-semi -Woverloaded-virtual -Wnon-virtual-dtor -Wold-style-cast -Wcast-qual -Wnull-dereference -Wundef -Wunreachable-code -O0 -g -fno-omit-frame-pointer -o CMakeFiles/main.dir/src/main.cpp.o -c /Users/danielsinkin/GitHub_private/neetcode/src/main.cpp",
-  "file": "/Users/danielsinkin/GitHub_private/neetcode/src/main.cpp",
-  "output": "CMakeFiles/main.dir/src/main.cpp.o"
-}
-]

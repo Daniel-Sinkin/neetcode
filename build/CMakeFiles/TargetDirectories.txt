@@ -1,4 +1,0 @@
-/Users/danielsinkin/GitHub_private/neetcode/build/CMakeFiles/main.dir
-/Users/danielsinkin/GitHub_private/neetcode/build/CMakeFiles/run.dir
-/Users/danielsinkin/GitHub_private/neetcode/build/CMakeFiles/edit_cache.dir
-/Users/danielsinkin/GitHub_private/neetcode/build/CMakeFiles/rebuild_cache.dir
