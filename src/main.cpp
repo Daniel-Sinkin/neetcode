@@ -4,9 +4,10 @@
 #include <cassert>
 #include <cctype>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <print>
 #include <string>
-#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -183,21 +184,20 @@ void problem_4_test() {
 }
 
 void problem_5_test() {
-
 }
 
 namespace Problem6 {
 using Decoded = std::vector<std::string>;
 using Encoded = std::string;
 
-Encoded encode(const Decoded& strs) {
-    if(strs.empty()) {
+Encoded encode(const Decoded &strs) {
+    if (strs.empty()) {
         return "";
     }
     std::string out;
-    for(const std::string& word : strs) {
+    for (const std::string &word : strs) {
         const std::string word_size_s = std::to_string(word.size());
-        if(word_size_s.size() == 1) {
+        if (word_size_s.size() == 1) {
             out.push_back('1');
         } else if (word_size_s.size() == 2) {
             out.push_back('2');
@@ -210,10 +210,10 @@ Encoded encode(const Decoded& strs) {
     return out;
 }
 
-Decoded decode(const Encoded& s) {
+Decoded decode(const Encoded &s) {
     Decoded out;
     usize i{0zu};
-    while(i < s.size()) {
+    while (i < s.size()) {
         const usize read_digit = static_cast<usize>(s[i] - '0');
         ++i;
         const usize n_chars = static_cast<usize>(std::stoul(s.substr(i, read_digit)));
@@ -232,18 +232,238 @@ void problem_6_test() {
 
     auto decoded = decode(encoded);
     assert(input.size() == decoded.size());
-    for(usize i = 0; i < input.size(); ++i) {
+    for (usize i = 0; i < input.size(); ++i) {
         assert(input[i] == decoded[i]);
     }
 }
 } // namespace Problem6
+
+std::vector<int> productExceptSelf(std::vector<int> &nums) {
+    std::vector<int> left;
+    left.resize(nums.size());
+    std::vector<int> right;
+    right.resize(nums.size());
+    std::vector<int> out;
+    out.resize(nums.size());
+
+    left[0] = nums[0];
+    right[right.size() - 1] = nums[right.size() - 1];
+    for (size_t i{1zu}; i < nums.size(); ++i) {
+        left[i] = left[i - 1] * nums[i];
+        const size_t r_idx = right.size() - 1 - i;
+        right[r_idx] = right[r_idx + 1] * nums[r_idx];
+    }
+    out[0] = right[1];
+    out[out.size() - 1] = left[out.size() - 2];
+    for (size_t i{1zu}; i < out.size() - 1; ++i) {
+        out[i] = left[i - 1] * right[i + 1];
+    }
+    return out;
+}
+
+bool is_valid_sodoku(const std::vector<std::vector<char>> board) {
+    for (const auto &row : board) {
+        int bits = 0;
+        for (const char c : row) {
+            if (c != '.') {
+                const int flag = (1 << (c - '1'));
+                if (bits & flag) {
+                    return false;
+                }
+                bits |= flag;
+            }
+        }
+    }
+    for (usize col_idx{0zu}; col_idx < 9; ++col_idx) {
+        int bits = 0;
+        for (usize row_idx{0zu}; row_idx < 9; ++row_idx) {
+            const char c = board[row_idx][col_idx];
+            if (c != '.') {
+                const int flag = (1 << (c - '1'));
+                if (bits & flag) {
+                    return false;
+                }
+                bits |= flag;
+            }
+        }
+    }
+    for (usize box_row{0zu}; box_row < 3; ++box_row) {
+        for (usize box_col{0zu}; box_col < 3; ++box_col) {
+            int bits = 0;
+            for (usize row{0zu}; row < 3; ++row) {
+                for (usize col{0zu}; col < 3; ++col) {
+                    const usize row_g = 3 * box_row + row;
+                    const usize col_g = 3 * box_col + col;
+                    const char c = board[row_g][col_g];
+                    if (c != '.') {
+                        const int flag = (1 << (c - '1'));
+                        if (bits & flag) {
+                            return false;
+                        }
+                        bits |= flag;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
+bool valid_parenthesis(std::string s) {
+    std::array<char, 500> my_stack{};
+    usize stack_ptr{0zu};
+    std::array<std::pair<char, char>, 3> pairs{};
+    pairs[0] = {'(',')'};
+    pairs[1] = {'[',']'};
+    pairs[2] = {'{','}'};
+
+    for(const char c : s) {
+        if(stack_ptr >= my_stack.size()) {
+            return false;
+        }
+        // Push
+        if(c == '(' || c == '[' || c == '{') {
+            my_stack[stack_ptr++] = c;
+            continue;
+        }
+        // Pop
+        if(stack_ptr == 0) {
+            return false;
+        }
+        for(const auto& [left, right] : pairs) {
+            if(c == right && my_stack[stack_ptr - 1] != left) {
+                return false;
+            }
+        }
+        --stack_ptr;
+    }
+    return (stack_ptr == 0);
+}
+
+namespace ProblemMinimumStack {
+class MinStack {
+    using Value = int;
+    using MinValue = int;
+
+public:
+    MinStack() {
+        min_stack_.reserve(128);
+    }
+    
+    void push(int val) {
+        if(min_stack_.empty()) {
+            min_stack_.push_back({val, val});
+        } else {
+            const auto& [old_val, old_min] = min_stack_.back();
+            if(old_min > val) {
+                min_stack_.push_back({val, val});
+            } else {
+                min_stack_.push_back({val, old_min});
+            }
+        }
+    }
+    
+    void pop() {
+        min_stack_.pop_back();
+    }
+    
+    int top() {
+        return min_stack_.back().first;
+    }
+    
+    int getMin() {
+        return min_stack_.back().second;
+    }
+private:
+    std::vector<std::pair<Value, MinValue>> min_stack_{};
+};
+}
+
+int eval_prn(const std::vector<std::string>& tokens) {
+    std::vector<int> values;
+    values.reserve(tokens.size());
+
+    for(usize i{0zu}; i < tokens.size(); ++i) {
+        const std::string& t = tokens[i];
+        if (t == "+" || t == "-" || t == "*" || t == "/") {
+            const int right = values.back();
+            values.pop_back();
+            const int left = values.back();
+            values.pop_back();
+            if(t == "+") { values.push_back(left + right); }
+            else if (t == "-") { values.push_back(left - right);
+            } else if (t == "*") { values.push_back(left * right);
+            } else if (t == "/") { values.push_back(left / right); }
+        } else {
+            values.push_back(std::stoi(t));
+        }
+    }
+    return values.back();
+}
+
+std::vector<int> daily_temperature(std::vector<int>& temperatures) {
+    using Position = uint32_t; // not using usize as 12 byte is awkward alignment
+    std::vector<std::pair<int, Position>> my_stack;
+    std::vector<int> out;
+    out.resize(temperatures.size());
+
+    my_stack.reserve(temperatures.size());
+    for(usize i{0}; i < temperatures.size(); ++i) {
+        const int value{temperatures[i]};
+        while(!my_stack.empty() && value > my_stack.back().first) {
+            const Position idx = my_stack.back().second;
+            out[static_cast<usize>(idx)] = static_cast<int>(i - idx);
+            my_stack.pop_back();
+        }
+        my_stack.push_back({value, static_cast<Position>(i)});
+    }
+
+    return out;
+}
+
+namespace ProblemIsPalindrome {
+bool same_alphanum(char a, char b) {
+    if (a >= 'A' && a <= 'Z') a += 'a' - 'A';
+    if (b >= 'A' && b <= 'Z') b += 'a' - 'A';
+
+    return a == b;
+} 
+
+bool isPalindrome(const std::string& s) {
+    usize left{0zu};
+    usize right{s.size() - 1};
+
+    while(left < right) {
+        while(!std::isalnum(s[left])) {
+            ++left;
+        }
+        while(!std::isalnum(s[right])) {
+            if(right == 0) {
+                return (left >= s.size());
+            }
+            --right;
+        }
+        if(left >= right) {
+            return same_alphanum(s[left], s[right]);
+        }
+        if(!same_alphanum(s[left], s[right])) {
+            return false;
+        }
+        ++left;
+        if(right > 0) {
+            --right;
+        }
+    }
+    return true;
+}
+} // namespace ProblemIsPalindrom
 } // namespace ds_neetcode
 
 
 int main() {
     using namespace ds_neetcode;
 
-    if constexpr (true) {
+    if constexpr (false) {
         std::println("Running the tests.");
         if constexpr (test_problem_1) {
             problem_1_test();
