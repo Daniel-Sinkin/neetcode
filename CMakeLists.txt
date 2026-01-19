@@ -19,6 +19,10 @@ add_executable(main
   src/main.cpp
 )
 
+target_precompile_headers(main PRIVATE
+  "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp>"
+)
+
 # ---- Common compile options ----
 # Equivalent to: -fcolor-diagnostics (Clang) and strong warnings + Werror
 target_compile_options(main PRIVATE
