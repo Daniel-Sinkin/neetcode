@@ -1,8 +1,8 @@
 // src/main.cpp
 
 #include "pch.hpp" // IWYU pragma: keep
+#include <cmath>
 #include <cstddef>
-#include <print>
 
 namespace ds_neetcode {
 using usize = std::size_t;
@@ -189,32 +189,4 @@ int trapping_rain_water(const std::vector<int>& height) {
 
 int main() {
     using namespace ds_neetcode;
-
-    std::vector<int> height{0, 2, 0, 3, 1, 0, 1, 3, 2, 1};
-    std::vector<int> prefix;
-    prefix.resize(height.size(), 0);
-    std::vector<int> suffix;
-    suffix.resize(height.size(), 0);
-
-    std::println("height={}", height);
-    std::println("prefix={}", prefix);
-    std::println("suffix={}", suffix);
-
-    { // Filling prefix and suffix arrays
-        int prefix_max{0};
-        int suffix_max{0};
-        for(usize i_prefix{0zu}; i_prefix < height.size(); ++i_prefix) {
-            const usize i_suffix = height.size() - i_prefix - 1;
-
-            prefix_max = std::max(height[i_prefix], prefix_max);
-            suffix_max = std::max(height[i_suffix], suffix_max);
-
-            prefix[i_prefix] = prefix_max;
-            suffix[i_suffix] = suffix_max;
-        }
-    }
-    for(usize i{0zu}; i < prefix.size(); ++i) {
-        prefix[i] = std::min(prefix[i], suffix[i]) - height[i];
-    }
-    std::println("final_water_level={}", prefix);
 }
