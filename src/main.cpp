@@ -1,489 +1,220 @@
 // src/main.cpp
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <cctype>
+
+#include "pch.hpp" // IWYU pragma: keep
 #include <cstddef>
-#include <cstdint>
-#include <limits>
 #include <print>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
-#include <vector>
 
 namespace ds_neetcode {
-
 using usize = std::size_t;
+using isize = std::ptrdiff_t;
 
-using lc_chars = std::array<int, 26>; // lower case ascii chars
+namespace ProblemClimbingStairs {
+#include <array>
 
-constexpr bool test_problem_1 = false;
-constexpr bool test_problem_2 = false;
-constexpr bool test_problem_3 = false;
-constexpr bool test_problem_4 = false;
-constexpr bool test_problem_5 = false;
-constexpr bool test_problem_6 = true;
-
-bool contains_duplicates(const std::vector<int> &nums) {
-    std::unordered_set<int> my_set{};
-    my_set.reserve(nums.size());
-
-    for (const int elem : nums) {
-        if (my_set.contains(elem)) {
-            return true;
-        }
-        my_set.insert(elem);
-    }
-    return false;
-}
-
-void problem_1_test() {
-    using Input = std::vector<int>;
-    using Output = bool;
-    using Case = std::pair<Output, Input>;
-    std::vector<Case> test_cases{};
-    test_cases.push_back({true, {1, 2, 3, 3}});
-    test_cases.push_back({false, {1, 2, 3, 4}});
-
-    for (const auto &[target, input] : test_cases) {
-        assert(contains_duplicates(input) == target);
-    }
-}
-
-bool is_anagram(const std::string &s, const std::string &t) {
-    if (s.size() != t.size()) {
-        return false;
-    }
-
-    lc_chars seen_chars{};
-
-    for (const char sc : s) {
-        seen_chars[static_cast<usize>(sc - 'a')] += 1;
-    }
-
-    for (const char tc : t) {
-        seen_chars[static_cast<usize>(tc - 'a')] -= 1;
-    }
-
-    for (usize i = 0; i < 26; ++i) {
-        if (seen_chars[i] != 0) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void problem_2_test() {
-    using Input = std::pair<std::string, std::string>;
-    using Output = bool;
-    using Case = std::pair<Output, Input>;
-    std::vector<Case> test_cases{};
-    test_cases.push_back({true, {"racecar", "carrace"}});
-    test_cases.push_back({false, {"jar", "jam"}});
-
-    for (const auto &[target, input] : test_cases) {
-        assert(is_anagram(input.first, input.second) == target);
-    }
-}
-
-std::vector<int> two_sum(const std::vector<int> &nums, int target) {
-    std::unordered_map<int, usize> my_map{};
-    for (usize i{0zu}; i < nums.size(); ++i) {
-        const int num{nums[i]};
-        auto it = my_map.find(target - num);
-        if (it != my_map.end()) {
-            const auto &[k, idx_found] = *it;
-            (void)k;
-            const int idx0 = static_cast<int>(i);
-            const int idx1 = static_cast<int>(idx_found);
-            return {std::min(idx0, idx1), std::max(idx0, idx1)};
-        }
-        my_map.insert({num, i});
-    }
-    std::unreachable();
-}
-
-void problem_3_test() {
-    using Input = std::pair<std::vector<int>, int>;
-    using Output = std::vector<int>;
-    using Case = std::pair<Output, Input>;
-    std::vector<Case> test_cases{};
-    test_cases.push_back({{0, 1}, {{3, 4, 5, 6}, 7}});
-    test_cases.push_back({{0, 2}, {{4, 5, 6}, 10}});
-    test_cases.push_back({{0, 1}, {{5, 5}, 10}});
-
-    for (const auto &[target, input] : test_cases) {
-        assert(two_sum(input.first, input.second) == target);
-    }
-}
-
-struct LCCharsHash {
-    usize operator()(const lc_chars &a) const noexcept {
-        usize h{0zu};
-        for (usize i{0zu}; i < 26; ++i) {
-            h = 31 * h + static_cast<usize>(a[i]);
-        }
-        return h;
-    }
-};
-
-static lc_chars chars_counter(const std::string &s) {
-    lc_chars retval{};
-    for (const char c : s) {
-        retval[static_cast<usize>(c - 'a')] += 1;
-    }
-    return retval;
-}
-
-std::vector<std::vector<std::string>>
-group_anagrams(const std::vector<std::string> &strs) {
-    std::unordered_map<lc_chars, std::vector<std::string>, LCCharsHash> groups{};
-    groups.reserve(strs.size());
-
-    for (const auto &s : strs) {
-        groups[chars_counter(s)].push_back(s);
-    }
-
-    std::vector<std::vector<std::string>> out{};
-    out.reserve(groups.size());
-    for (auto &[k, v] : groups) {
-        (void)k;
-        out.push_back(std::move(v));
-    }
-    return out;
-}
-
-void problem_4_test() {
-    using Input = std::vector<std::string>;
-    using Output = std::vector<std::vector<std::string>>;
-    using Case = std::pair<Output, Input>;
-
-    std::vector<Case> test_cases{};
-
-    test_cases.push_back({
-        {{"hat"}, {"pots", "tops", "stop"}, {"act", "cat"}},
-        {"act", "pots", "tops", "cat", "stop", "hat"},
-    });
-
-    test_cases.push_back({
-        {{"x"}},
-        {"x"},
-    });
-
-    test_cases.push_back({
-        {{""}},
-        {""},
-    });
-
-    for (auto &[expected, input] : test_cases) {
-        assert(group_anagrams(input) == expected);
-    }
-}
-
-void problem_5_test() {
-}
-
-namespace Problem6 {
-using Decoded = std::vector<std::string>;
-using Encoded = std::string;
-
-Encoded encode(const Decoded &strs) {
-    if (strs.empty()) {
-        return "";
-    }
-    std::string out;
-    for (const std::string &word : strs) {
-        const std::string word_size_s = std::to_string(word.size());
-        if (word_size_s.size() == 1) {
-            out.push_back('1');
-        } else if (word_size_s.size() == 2) {
-            out.push_back('2');
-        } else {
-            out.push_back('3');
-        }
-        out.append(word_size_s);
-        out.append(word);
-    }
-    return out;
-}
-
-Decoded decode(const Encoded &s) {
-    Decoded out;
-    usize i{0zu};
-    while (i < s.size()) {
-        const usize read_digit = static_cast<usize>(s[i] - '0');
-        ++i;
-        const usize n_chars = static_cast<usize>(std::stoul(s.substr(i, read_digit)));
-        i += read_digit;
-        out.push_back(std::string{s.substr(i, n_chars)});
-        i += n_chars;
-    }
-    return out;
-}
-
-void problem_6_test() {
-    using Input = Decoded;
-    const Input input = {"1Hello,", "my", "old", "Friend!", ""};
-    std::string encoded = encode(input);
-    std::println("{}", encoded);
-
-    auto decoded = decode(encoded);
-    assert(input.size() == decoded.size());
-    for (usize i = 0; i < input.size(); ++i) {
-        assert(input[i] == decoded[i]);
-    }
-}
-} // namespace Problem6
-
-std::vector<int> productExceptSelf(std::vector<int> &nums) {
-    std::vector<int> left;
-    left.resize(nums.size());
-    std::vector<int> right;
-    right.resize(nums.size());
-    std::vector<int> out;
-    out.resize(nums.size());
-
-    left[0] = nums[0];
-    right[right.size() - 1] = nums[right.size() - 1];
-    for (size_t i{1zu}; i < nums.size(); ++i) {
-        left[i] = left[i - 1] * nums[i];
-        const size_t r_idx = right.size() - 1 - i;
-        right[r_idx] = right[r_idx + 1] * nums[r_idx];
-    }
-    out[0] = right[1];
-    out[out.size() - 1] = left[out.size() - 2];
-    for (size_t i{1zu}; i < out.size() - 1; ++i) {
-        out[i] = left[i - 1] * right[i + 1];
-    }
-    return out;
-}
-
-bool is_valid_sodoku(const std::vector<std::vector<char>> board) {
-    for (const auto &row : board) {
-        int bits = 0;
-        for (const char c : row) {
-            if (c != '.') {
-                const int flag = (1 << (c - '1'));
-                if (bits & flag) {
-                    return false;
-                }
-                bits |= flag;
-            }
-        }
-    }
-    for (usize col_idx{0zu}; col_idx < 9; ++col_idx) {
-        int bits = 0;
-        for (usize row_idx{0zu}; row_idx < 9; ++row_idx) {
-            const char c = board[row_idx][col_idx];
-            if (c != '.') {
-                const int flag = (1 << (c - '1'));
-                if (bits & flag) {
-                    return false;
-                }
-                bits |= flag;
-            }
-        }
-    }
-    for (usize box_row{0zu}; box_row < 3; ++box_row) {
-        for (usize box_col{0zu}; box_col < 3; ++box_col) {
-            int bits = 0;
-            for (usize row{0zu}; row < 3; ++row) {
-                for (usize col{0zu}; col < 3; ++col) {
-                    const usize row_g = 3 * box_row + row;
-                    const usize col_g = 3 * box_col + col;
-                    const char c = board[row_g][col_g];
-                    if (c != '.') {
-                        const int flag = (1 << (c - '1'));
-                        if (bits & flag) {
-                            return false;
-                        }
-                        bits |= flag;
-                    }
-                }
-            }
-        }
-    }
-    return true;
-}
-
-bool valid_parenthesis(std::string s) {
-    std::array<char, 500> my_stack{};
-    usize stack_ptr{0zu};
-    std::array<std::pair<char, char>, 3> pairs{};
-    pairs[0] = {'(',')'};
-    pairs[1] = {'[',']'};
-    pairs[2] = {'{','}'};
-
-    for(const char c : s) {
-        if(stack_ptr >= my_stack.size()) {
-            return false;
-        }
-        // Push
-        if(c == '(' || c == '[' || c == '{') {
-            my_stack[stack_ptr++] = c;
-            continue;
-        }
-        // Pop
-        if(stack_ptr == 0) {
-            return false;
-        }
-        for(const auto& [left, right] : pairs) {
-            if(c == right && my_stack[stack_ptr - 1] != left) {
-                return false;
-            }
-        }
-        --stack_ptr;
-    }
-    return (stack_ptr == 0);
-}
-
-namespace ProblemMinimumStack {
-class MinStack {
-    using Value = int;
-    using MinValue = int;
-
+class Solution {
 public:
-    MinStack() {
-        min_stack_.reserve(128);
-    }
-    
-    void push(int val) {
-        if(min_stack_.empty()) {
-            min_stack_.push_back({val, val});
-        } else {
-            const auto& [old_val, old_min] = min_stack_.back();
-            if(old_min > val) {
-                min_stack_.push_back({val, val});
-            } else {
-                min_stack_.push_back({val, old_min});
-            }
+    int climbStairs(int n) {
+        if(!inited_) {
+            memo_.fill(-1);
+            memo_[0] = 1;
+            memo_[1] = 1;
+            inited_ = true;
         }
-    }
-    
-    void pop() {
-        min_stack_.pop_back();
-    }
-    
-    int top() {
-        return min_stack_.back().first;
-    }
-    
-    int getMin() {
-        return min_stack_.back().second;
+        const usize idx = static_cast<usize>(n);
+        if(memo_[idx] != -1) {
+            return memo_[idx];
+        }
+        memo_[idx] = climbStairs(n - 1) + climbStairs(n - 2);
+        return memo_[idx];
     }
 private:
-    std::vector<std::pair<Value, MinValue>> min_stack_{};
+    std::array<int, 30> memo_;
+    bool inited_{false};
 };
-}
+} // namespaec ProblemClimbingStairs
 
-int eval_prn(const std::vector<std::string>& tokens) {
-    std::vector<int> values;
-    values.reserve(tokens.size());
-
-    for(usize i{0zu}; i < tokens.size(); ++i) {
-        const std::string& t = tokens[i];
-        if (t == "+" || t == "-" || t == "*" || t == "/") {
-            const int right = values.back();
-            values.pop_back();
-            const int left = values.back();
-            values.pop_back();
-            if(t == "+") { values.push_back(left + right); }
-            else if (t == "-") { values.push_back(left - right);
-            } else if (t == "*") { values.push_back(left * right);
-            } else if (t == "/") { values.push_back(left / right); }
-        } else {
-            values.push_back(std::stoi(t));
-        }
+int reverse_int(int x) {
+    std::string res{std::to_string(x)};
+    std::reverse(res.begin() + ((x < 0) ? 1 : 0), res.end());
+    try {
+        return std::stoi(res);
+    } catch (std::out_of_range) {
+        return 0;
     }
-    return values.back();
 }
 
-std::vector<int> daily_temperature(std::vector<int>& temperatures) {
-    using Position = uint32_t; // not using usize as 12 byte is awkward alignment
-    std::vector<std::pair<int, Position>> my_stack;
-    std::vector<int> out;
-    out.resize(temperatures.size());
+namespace ProblemNumIsland {
+class Solution {
+public:
+    int numIslands(std::vector<std::vector<char>>& grid) {
+        using usize = std::size_t;
+        const usize n = grid.size();
+        const usize m = grid[0].size();
+    
+        std::vector<std::vector<bool>> visited(n, std::vector<bool>(m, false));
+        int count{0};
 
-    my_stack.reserve(temperatures.size());
-    for(usize i{0}; i < temperatures.size(); ++i) {
-        const int value{temperatures[i]};
-        while(!my_stack.empty() && value > my_stack.back().first) {
-            const Position idx = my_stack.back().second;
-            out[static_cast<usize>(idx)] = static_cast<int>(i - idx);
-            my_stack.pop_back();
-        }
-        my_stack.push_back({value, static_cast<Position>(i)});
-    }
+        for(usize row = 0; row < n; ++row) {
+            for(usize col = 0; col < m; ++col) {
+                if(grid[row][col] == '0') {
+                    visited[row][col] = true;
+                } else if (!visited[row][col]) { // Flood Fill
+                    std::vector<std::pair<usize, usize>> to_check{};
+                    to_check.push_back({row, col});
+                    visited[row][col] = true;
 
-    return out;
-}
+                    while(!to_check.empty()) {
+                        const auto [row_, col_] = to_check.back();
+                        to_check.pop_back();
 
-namespace ProblemIsPalindrome {
-bool same_alphanum(char a, char b) {
-    if (a >= 'A' && a <= 'Z') a += 'a' - 'A';
-    if (b >= 'A' && b <= 'Z') b += 'a' - 'A';
+                        if(row_ > 0 && !visited[row_ - 1][col_] && grid[row_ - 1][col_] == '1') {
+                            visited[row_ - 1][col_] = true;
+                            to_check.push_back({row_ - 1, col_});
+                        }
+                        if(row_ < n - 1 && !visited[row_ + 1][col_] && grid[row_ + 1][col_] == '1') {
+                            visited[row_ + 1][col_] = true;
+                            to_check.push_back({row_ + 1, col_});
+                        }
+                        if(col_ > 0 && !visited[row_][col_ - 1] && grid[row_][col_ - 1] == '1') {
+                            visited[row_][col_ - 1] = true;
+                            to_check.push_back({row_, col_ - 1});
+                        }
+                        if(col_ < m - 1 && !visited[row_][col_ + 1] && grid[row_][col_ + 1] == '1') {
+                            visited[row_][col_ + 1] = true;
+                            to_check.push_back({row_, col_ + 1});
+                        }
+                    }
 
-    return a == b;
-} 
-
-bool isPalindrome(const std::string& s) {
-    usize left{0zu};
-    usize right{s.size() - 1};
-
-    while(left < right) {
-        while(!std::isalnum(s[left])) {
-            ++left;
-        }
-        while(!std::isalnum(s[right])) {
-            if(right == 0) {
-                return (left >= s.size());
+                    ++count;
+                }
             }
-            --right;
         }
-        if(left >= right) {
-            return same_alphanum(s[left], s[right]);
+
+        return count;
+    }
+};
+} // namespace ProblemNumIsland
+
+class DynamicArray {
+public:
+    DynamicArray(int capacity) {
+        start_ = static_cast<int*>(std::malloc(static_cast<usize>(capacity) * sizeof(int)));
+        end_ = start_;
+        capacity_ = start_ + capacity;
+    }
+
+    ~DynamicArray() {
+        std::free(start_);
+    }
+
+    int get(int i) const {
+        return *(start_ + i);
+    }
+
+    void set(int i, int n) {
+        *(start_ + i) = n;
+    }
+
+    void push_back(int n) {
+        if(end_ == capacity_) {
+            resize();
         }
-        if(!same_alphanum(s[left], s[right])) {
-            return false;
-        }
-        ++left;
-        if(right > 0) {
-            --right;
+        *end_ = n;
+        ++end_;
+    }
+
+    int pop_back() {
+        --end_;
+        int val = *end_;
+        return val;
+    }
+
+    void resize() {
+        const int n_elements = get_size();
+        const usize old_capacity = static_cast<usize>(capacity_ - start_);
+        const usize new_capacity = static_cast<usize>(2 * static_cast<double>(old_capacity));
+
+        auto tmp = static_cast<int*>(std::realloc(start_, new_capacity * sizeof(int)));
+        assert(tmp);
+        start_ = tmp;
+        end_ = start_ + n_elements;
+        capacity_ = start_ + new_capacity;
+    }
+
+    int get_size() const {
+        return static_cast<int>(end_ - start_);
+    }
+
+    int get_capacity() const {
+        return static_cast<int>(capacity_ - start_);
+    }
+
+    bool empty() const {
+        return start_ == end_;
+    }
+
+private:
+    int* start_{};
+    int* end_{};
+    int* capacity_{};
+};
+
+int trapping_rain_water(const std::vector<int>& height) {
+    std::vector<int> prefix;
+    prefix.resize(height.size(), 0);
+    std::vector<int> suffix;
+    suffix.resize(height.size(), 0);
+    { // Filling prefix and suffix arrays
+        int prefix_max{0};
+        int suffix_max{0};
+        for(usize i_prefix{0zu}; i_prefix < height.size(); ++i_prefix) {
+            const usize i_suffix = height.size() - i_prefix - 1;
+
+            prefix_max = std::max(height[i_prefix], prefix_max);
+            suffix_max = std::max(height[i_suffix], suffix_max);
+
+            prefix[i_prefix] = prefix_max;
+            suffix[i_suffix] = suffix_max;
         }
     }
-    return true;
+    int final_water{0};
+    // Reusing prefix for final water level to avoid additional memory usage:w
+    for(usize i{0zu}; i < prefix.size(); ++i) {
+        final_water += std::min(prefix[i], suffix[i]) - height[i];
+    }
+    return final_water;
 }
-} // namespace ProblemIsPalindrom
-} // namespace ds_neetcode
 
+} // namespace ns_neetnode;
 
 int main() {
     using namespace ds_neetcode;
 
-    if constexpr (false) {
-        std::println("Running the tests.");
-        if constexpr (test_problem_1) {
-            problem_1_test();
+    std::vector<int> height{0, 2, 0, 3, 1, 0, 1, 3, 2, 1};
+    std::vector<int> prefix;
+    prefix.resize(height.size(), 0);
+    std::vector<int> suffix;
+    suffix.resize(height.size(), 0);
+
+    std::println("height={}", height);
+    std::println("prefix={}", prefix);
+    std::println("suffix={}", suffix);
+
+    { // Filling prefix and suffix arrays
+        int prefix_max{0};
+        int suffix_max{0};
+        for(usize i_prefix{0zu}; i_prefix < height.size(); ++i_prefix) {
+            const usize i_suffix = height.size() - i_prefix - 1;
+
+            prefix_max = std::max(height[i_prefix], prefix_max);
+            suffix_max = std::max(height[i_suffix], suffix_max);
+
+            prefix[i_prefix] = prefix_max;
+            suffix[i_suffix] = suffix_max;
         }
-        if constexpr (test_problem_2) {
-            problem_2_test();
-        }
-        if constexpr (test_problem_3) {
-            problem_3_test();
-        }
-        if constexpr (test_problem_4) {
-            problem_4_test();
-        }
-        if constexpr (test_problem_5) {
-            problem_5_test();
-        }
-        if constexpr (test_problem_6) {
-            using namespace Problem6;
-            problem_6_test();
-        }
-        std::println("Passed all tests!");
     }
+    for(usize i{0zu}; i < prefix.size(); ++i) {
+        prefix[i] = std::min(prefix[i], suffix[i]) - height[i];
+    }
+    std::println("final_water_level={}", prefix);
 }
