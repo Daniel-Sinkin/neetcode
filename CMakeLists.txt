@@ -1,6 +1,6 @@
 # CMakeLists.txt
 cmake_minimum_required(VERSION 3.20)
-project(orderbook LANGUAGES CXX)
+project(neetcode LANGUAGES CXX)
 
 # ---- Options (match your script knobs) ----
 option(ENABLE_SANITIZERS "Enable ASan+UBSan (Debug only; best with Clang)" OFF)
